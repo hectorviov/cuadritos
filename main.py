@@ -2,6 +2,70 @@ import random
 import math
 import sqlite3
 
+def sorteo():
+    cuadros = []
+    for i in range(10):
+        new = []
+        for j in range(10):
+            new.append(0)
+        cuadros.append(new)
+    lista = []
+    for i in range(100):
+        lista.append(i)
+    try:
+        conn = sqlite3.connect('db.db')
+        cursor = conn.cursor()
+        
+        query = """SELECT * FROM players;"""
+        cursor.execute(query)
+        records = cursor.fetchall()
+        for row in records:
+            for squares in range(row[2]):
+                found = False
+                tries = 0
+                while not found:
+                    poder = math.pow(len(lista), len(lista))
+                    if (tries > poder):
+                        return False
+                    rando = random.choice(lista)
+                    x = math.floor(rando / 10)
+                    y = rando % 10
+                    igual = False
+                    for i in range(10):
+                        if (cuadros[x][i] == row[0]):
+                            igual = True
+                            break
+                    if (not igual):
+                        for i in range(10):
+                            if (cuadros[i][y] == row[0]):
+                                igual = True
+                                break
+                    if (igual):
+                        tries += 1
+                        continue
+                    else:
+                        found = True
+                        lista.remove(rando)
+                        cuadros[x][y] = row[0]
+        for i in range(10):
+            linea = ""
+            for j in range(10):
+                str_id = ""
+                if (cuadros[i][j] < 10):
+                    str_id = "0" + str(cuadros[i][j])
+                else:
+                    str_id = str(cuadros[i][j])
+                linea += str_id + "\t"
+            print(linea)
+        print()
+        cursor.close()
+        return True
+    except sqlite3.Error as error:
+        print("Error en la DB: ", error)
+    finally:
+        if (conn):
+            conn.close()
+
 def main():
     main_continue = True
     try:
@@ -12,6 +76,7 @@ def main():
         print("\t4) Sortear cuadros")
         print("\t5) Salir")
         opcion = int(input("Opcion: "))
+        print()
         if (opcion == 1):
             nombre = input("Nombre: ")
             cuadros = int(input("Cuadros: "))
@@ -72,63 +137,8 @@ def main():
                 if (conn):
                     conn.close()
         elif (opcion == 4):
-            cuadros = []
-            for i in range(10):
-                new = []
-                for j in range(10):
-                    new.append(0)
-                cuadros.append(new)
-            try:
-                conn = sqlite3.connect('db.db')
-                cursor = conn.cursor()
-                
-                query = """SELECT * FROM players;"""
-                cursor.execute(query)
-                records = cursor.fetchall()
-                lugares_encontrados = 0
-                for row in records:
-                    for squares in range(row[2]):
-                        found = False
-                        while not found:
-                            rando = random.randrange(100)
-                            x = math.floor(rando / 10)
-                            y = rando % 10
-                            igual = False
-                            for i in range(10):
-                                if (cuadros[x][i] == row[0]):
-                                    igual = True
-                                    break
-                            if (not igual):
-                                for i in range(10):
-                                    if (cuadros[i][y] == row[0]):
-                                        igual = True
-                                        break
-                            if (igual):
-                                continue
-                            else:
-                                if (cuadros[x][y] > 0):
-                                    continue
-                                else:
-                                    found = True
-                                    lugares_encontrados += 1
-                                    print("Encontré el lugar:", lugares_encontrados, "en", x, ",", y)
-                                    cuadros[x][y] = row[0]
-                for i in range(10):
-                    linea = ""
-                    for j in range(10):
-                        str_id = ""
-                        if (cuadros[i][j] < 10):
-                            str_id = "0" + str(cuadros[i][j])
-                        else:
-                            str_id = str(cuadros[i][j])
-                        linea += str_id + "\t"
-                    print(linea)
-                cursor.close()
-            except sqlite3.Error as error:
-                print("Error en la DB: ", error)
-            finally:
-                if (conn):
-                    conn.close()
+            while not sorteo():
+                continue
         elif (opcion == 5):
             print("Adios!")
             main_continue = False
