@@ -36,7 +36,7 @@ def main():
                 conn = sqlite3.connect('db.db')
                 cursor = conn.cursor()
                 
-                query = """SELECT * FROM players;"""
+                query = """SELECT * FROM players WHERE squares > 0;"""
                 cursor.execute(query)
                 records = cursor.fetchall()
                 print("Hay ", len(records), " registrados:")
@@ -89,10 +89,33 @@ def main():
                     for squares in range(row[2]):
                         found = False
                         while not found:
+                            igual = False
                             rando = randrange(100)
                             x = math.floor(rando / 10)
-                            y = rando % 10                            
-                print(cuadros)
+                            y = rando % 10
+                            for i in range(10):
+                                if (cuadros[x][i] == row[0]):
+                                    igual = True
+                                    break
+                            for i in range(10):
+                                if (cuadros[i][y] == row[0]):
+                                    igual = True
+                                    break
+                            if (igual):
+                                continue
+                            else:
+                                found = True
+                                cuadros[x][y] = row[0]
+                for i in range(10):
+                    linea = ""
+                    for j in range(10):
+                        str_id = ""
+                        if (cuadros[i][j] < 10):
+                            str_id = "0" + str(cuadros[i][j])
+                        else:
+                            str_id = str(cuadros[i][j])
+                        linea += str_id + "\t"
+                    print(linea)
                 cursor.close()
             except sqlite3.Error as error:
                 print("Error en la DB: ", error)
