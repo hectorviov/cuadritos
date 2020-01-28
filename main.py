@@ -1,4 +1,4 @@
-from random import randrange
+import random
 import math
 import sqlite3
 
@@ -85,27 +85,34 @@ def main():
                 query = """SELECT * FROM players;"""
                 cursor.execute(query)
                 records = cursor.fetchall()
+                lugares_encontrados = 0
                 for row in records:
                     for squares in range(row[2]):
                         found = False
                         while not found:
-                            igual = False
-                            rando = randrange(100)
+                            rando = random.randrange(100)
                             x = math.floor(rando / 10)
                             y = rando % 10
+                            igual = False
                             for i in range(10):
                                 if (cuadros[x][i] == row[0]):
                                     igual = True
                                     break
-                            for i in range(10):
-                                if (cuadros[i][y] == row[0]):
-                                    igual = True
-                                    break
+                            if (not igual):
+                                for i in range(10):
+                                    if (cuadros[i][y] == row[0]):
+                                        igual = True
+                                        break
                             if (igual):
                                 continue
                             else:
-                                found = True
-                                cuadros[x][y] = row[0]
+                                if (cuadros[x][y] > 0):
+                                    continue
+                                else:
+                                    found = True
+                                    lugares_encontrados += 1
+                                    print("Encontré el lugar:", lugares_encontrados, "en", x, ",", y)
+                                    cuadros[x][y] = row[0]
                 for i in range(10):
                     linea = ""
                     for j in range(10):
